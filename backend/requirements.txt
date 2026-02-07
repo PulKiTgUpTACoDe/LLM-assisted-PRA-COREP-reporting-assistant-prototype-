@@ -1,0 +1,38 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+
+# Google AI (Gemini)
+google-generativeai
+
+# LangChain for orchestration
+langchain
+langchain-google-genai
+langchain-community
+langchain-chroma
+
+# Vector Database
+chromadb
+
+# Document Processing
+beautifulsoup4
+pdfplumber
+pypdf2
+python-multipart
+
+# HTTP & Utilities
+httpx
+requests
+aiofiles
+
+# Data Processing
+pandas
+openpyxl
+numpy
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov

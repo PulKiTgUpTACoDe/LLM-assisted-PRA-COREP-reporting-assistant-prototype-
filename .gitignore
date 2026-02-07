@@ -1,0 +1,71 @@
+# Ignore Python virtual environment
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.pyd
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+
+# Ignore Node modules
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.turbo/
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+backend/.env
+frontend/.env.local
+
+# ChromaDB data
+data/chroma_db/
+*.db
+*.sqlite
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+backend/logs/
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Data files (sensitive regulatory documents)
+data/pra_rulebook/**/*.pdf
+data/pra_supervisory_statements/**/*.pdf
+data/corep_templates/**/*.xlsx
+
+# Keep folder structure but ignore content
+!data/pra_rulebook/.gitkeep
+!data/corep_templates/.gitkeep
+!data/pra_supervisory_statements/.gitkeep
