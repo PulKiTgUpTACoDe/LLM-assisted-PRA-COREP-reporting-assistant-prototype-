@@ -12,6 +12,7 @@ langchain
 langchain-google-genai
 langchain-community
 langchain-chroma
+langchain-text-splitters
 
 # Vector Database
 chromadb
@@ -19,7 +20,7 @@ chromadb
 # Document Processing
 beautifulsoup4
 pdfplumber
-pypdf2
+pypdf  
 python-multipart
 
 # HTTP & Utilities

@@ -2,10 +2,10 @@
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema import Document
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 from app.config import get_settings
 from app.models.schemas import TemplateField, ConfidenceLevel
 from typing import List, Dict, Any
@@ -209,10 +209,52 @@ Return ONLY valid JSON in this exact structure:
             # Remove markdown code blocks if present
             if response_text.startswith("```"):
                 lines = response_text.split("\n")
-                response_text = "\n".join(lines[1:-1])
+                # Find json block
+                start_idx = 0
+                for i, line in enumerate(lines):
+                    if line.strip().startswith("```json") or line.strip() == "```":
+                        start_idx = i + 1
+                        break
+                response_text = "\n".join(lines[start_idx:])
+                if response_text.endswith("```"):
+                    response_text = response_text[:-3]
             
-            # Parse JSON
-            data = json.loads(response_text)
+            response_text = response_text.strip()
+            
+            # Try to parse JSON
+            try:
+                data = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                # If JSON is incomplete, try to extract what we can
+                logger.warning(f"JSON parsing failed, attempting to extract partial data: {e}")
+                
+                # Try to find the last complete populated_fields entry
+                import re
+                fields_match = re.search(r'"populated_fields"\s*:\s*\[(.*)\]', response_text, re.DOTALL)
+                
+                if fields_match:
+                    # Try to parse just the fields array
+                    try:
+                        # Add closing braces to make valid JSON
+                        partial_json = f'{{"populated_fields": [{fields_match.group(1)}]}}'
+                        data = json.loads(partial_json)
+                        data.setdefault("missing_data", ["Response was truncated"])
+                        data.setdefault("assumptions", [])
+                    except:
+                        # If that fails too, return empty structure
+                        return {
+                            "populated_fields": [],
+                            "missing_data": [f"Failed to parse LLM response: {str(e)}"],
+                            "assumptions": [],
+                            "error": response_text[:500]
+                        }
+                else:
+                    return {
+                        "populated_fields": [],
+                        "missing_data": [f"Failed to parse LLM response: {str(e)}"],
+                        "assumptions": [],
+                        "error": response_text[:500]
+                    }
             
             # Validate required keys
             required_keys = ["populated_fields", "missing_data", "assumptions"]
@@ -234,13 +276,12 @@ Return ONLY valid JSON in this exact structure:
             
             return data
             
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {e}")
-            logger.error(f"Response text: {response_text[:500]}")
+        except Exception as e:
+            logger.error(f"Unexpected error parsing LLM response: {e}")
             
             return {
                 "populated_fields": [],
-                "missing_data": ["Failed to parse LLM response"],
+                "missing_data": [f"Failed to parse LLM response: {str(e)}"],
                 "assumptions": [],
                 "error": str(e)
             }

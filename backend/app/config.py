@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     
     # Google AI (Gemini)
     google_api_key: str
-    gemini_model: str = "gemini-2.0-flash-exp"
+    gemini_model: str = "gemini-2.5-flash"
     embedding_model: str = "text-embedding-004"
     temperature: float = 0.1
     max_output_tokens: int = 8192

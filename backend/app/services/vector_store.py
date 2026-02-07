@@ -32,7 +32,7 @@ class VectorStore:
         
         # Set up Gemini embedding function
         try:
-            import google.generativeai as genai
+            import google.genai as genai
             genai.configure(api_key=settings.google_api_key)
             
             # Create custom embedding function for Gemini
@@ -60,7 +60,7 @@ class VectorStore:
     
     def _create_gemini_embedder(self):
         """Create custom embedding function using Gemini."""
-        import google.generativeai as genai
+        import google.genai as genai
         
         class GeminiEmbeddingFunction:
             def __call__(self, input: List[str]) -> List[List[float]]:
@@ -118,7 +118,7 @@ class VectorStore:
         
         try:
             # Generate embedding for query
-            import google.generativeai as genai
+            import google.genai as genai
             genai.configure(api_key=settings.google_api_key)
             
             query_embedding = genai.embed_content(

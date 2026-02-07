@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 from app.models.schemas import HealthResponse
 from app.config import get_settings
-import google.generativeai as genai
+import google.genai as genai
 
 router = APIRouter()
 settings = get_settings()
