@@ -1,6 +1,6 @@
 """LLM Orchestrator using Google Gemini for regulatory analysis."""
 
-import google.genai as genai
+import google.generativeai as genai
 from app.config import get_settings
 from app.models.schemas import TemplateField, ConfidenceLevel
 from typing import List, Dict, Any

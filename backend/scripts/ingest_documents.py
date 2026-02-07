@@ -8,7 +8,7 @@ from chromadb.config import Settings as ChromaSettings
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-import google.genai as genai
+import google.generativeai as genai
 from app.config import get_settings
 
 settings = get_settings()
@@ -170,12 +170,21 @@ def main():
     print("   ⏳ This may take a few minutes...")
     
     embeddings = []
+    import time
+    
     for i, chunk in enumerate(all_chunks):
         if (i + 1) % 10 == 0:
             print(f"   📊 Progress: {i + 1}/{len(all_chunks)}")
         
         embedding = generate_embedding(chunk)
         embeddings.append(embedding)
+        
+        # Gemini free tier: ~60 requests/minute
+        if (i + 1) % 50 == 0:
+            print(f"   ⏸️  Pausing 60s to avoid rate limit...")
+            time.sleep(60)
+        else:
+            time.sleep(1.2)  # ~50 requests/minute with buffer
     
     print(f"   ✅ Generated {len(embeddings)} embeddings")
     
