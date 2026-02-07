@@ -1,17 +1,16 @@
-"""LangChain-based orchestrator for improved RAG pipeline."""
+"""LangChain orchestrator for COREP query processing."""
 
+import logging
+import json
+import os
+from typing import List, Dict, Any
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.documents import Document
-from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 from app.config import get_settings
-from app.models.schemas import TemplateField, ConfidenceLevel
-from typing import List, Dict, Any
-import json
-import logging
-from pathlib import Path
+from app.models.schemas import TemplateField
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -21,16 +20,11 @@ class LangChainOrchestrator:
     """LangChain-based orchestrator for COREP query processing."""
     
     def __init__(self):
-        """Initialize LangChain components."""
-        
-        # Set up LangSmith tracing if enabled
-        import os
         os.environ["LANGCHAIN_TRACING_V2"] = settings.langsmith_tracing
         os.environ["LANGCHAIN_API_KEY"] = settings.langsmith_api_key
         os.environ["LANGCHAIN_PROJECT"] = settings.langsmith_project
         os.environ["LANGCHAIN_ENDPOINT"] = settings.langsmith_endpoint
         
-        # Initialize Gemini LLM
         self.llm = ChatGoogleGenerativeAI(
             model=settings.gemini_model,
             google_api_key=settings.google_api_key,
@@ -38,24 +32,17 @@ class LangChainOrchestrator:
             max_output_tokens=settings.max_output_tokens,
         )
         
-        # Initialize embeddings
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            model=f"models/{settings.embedding_model}",
-            google_api_key=settings.google_api_key,
-            task_type="retrieval_document"
+            model=settings.embedding_model,
+            google_api_key=settings.google_api_key
         )
-        
-        # Initialize vector store
-        persist_path = Path(settings.chroma_persist_dir)
-        persist_path.mkdir(parents=True, exist_ok=True)
         
         self.vectorstore = Chroma(
             collection_name=settings.collection_name,
             embedding_function=self.embeddings,
-            persist_directory=str(persist_path)
+            persist_directory=settings.chroma_persist_dir
         )
         
-        # Create retriever
         self.retriever = self.vectorstore.as_retriever(
             search_kwargs={"k": settings.top_k_results}
         )
@@ -93,6 +80,45 @@ class LangChainOrchestrator:
             result = await chain.ainvoke(question)
             
             # Parse the response
+            parsed_response = self._parse_llm_response(result)
+            return parsed_response
+            
+        except Exception as e:
+            logger.error(f"LangChain processing failed: {e}")
+            raise
+    
+    def process_query(self, question: str, template_structure: List[TemplateField]) -> Dict[str, Any]:
+        try:
+            logger.info(f"Processing query: {question[:100]}...")
+            
+            retrieved_docs = self.retriever.invoke(question)
+            retrieved_context = [
+                {
+                    "text": doc.page_content,
+                    "source": doc.metadata.get("source", "Unknown"),
+                    "page": doc.metadata.get("page", 0)
+                }
+                for doc in retrieved_docs
+            ]
+            
+            logger.info(f"Retrieved {len(retrieved_context)} documents")
+            
+            context_text = self._format_context(retrieved_context)
+            template_fields_text = self._format_template_fields(template_structure)
+            prompt_template = self._create_prompt_template()
+            
+            chain = (
+                {
+                    "question": RunnablePassthrough(), 
+                    "context": lambda _: context_text, 
+                    "template_fields": lambda _: template_fields_text
+                }
+                | prompt_template
+                | self.llm
+                | StrOutputParser()
+            )
+            
+            result = chain.invoke(question)
             parsed_response = self._parse_llm_response(result)
             return parsed_response
             
