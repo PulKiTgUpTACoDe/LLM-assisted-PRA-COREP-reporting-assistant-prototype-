@@ -23,6 +23,13 @@ class LangChainOrchestrator:
     def __init__(self):
         """Initialize LangChain components."""
         
+        # Set up LangSmith tracing if enabled
+        import os
+        os.environ["LANGCHAIN_TRACING_V2"] = settings.langsmith_tracing
+        os.environ["LANGCHAIN_API_KEY"] = settings.langsmith_api_key
+        os.environ["LANGCHAIN_PROJECT"] = settings.langsmith_project
+        os.environ["LANGCHAIN_ENDPOINT"] = settings.langsmith_endpoint
+        
         # Initialize Gemini LLM
         self.llm = ChatGoogleGenerativeAI(
             model=settings.gemini_model,

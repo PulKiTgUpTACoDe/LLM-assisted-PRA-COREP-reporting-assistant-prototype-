@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     debug: bool = True
     log_level: str = "INFO"
     
+    # LangSmith Tracing (Optional)
+    langsmith_tracing: str = "false"
+    langsmith_api_key: str = ""
+    langsmith_project: str = "corep-assistant"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
+    
     class Config:
         env_file = ".env"
         case_sensitive = False

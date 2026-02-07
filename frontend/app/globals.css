@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Make text DARK in input fields for readability */
+input,
+textarea,
+select {
+  color: #1e293b !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+}

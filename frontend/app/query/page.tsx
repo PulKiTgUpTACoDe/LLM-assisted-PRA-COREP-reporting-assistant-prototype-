@@ -35,9 +35,21 @@ export default function QueryPage() {
   };
 
   const sampleScenarios = [
-    "Our bank has CET1 capital of £500M, AT1 instruments of £100M, and Tier 2 capital of £200M. We have £50M in intangible assets and £30M in deferred tax assets. What should we report in CA1?",
-    "We have ordinary shares worth £300M, retained earnings of £150M, and other reserves of £50M. Our intangible assets total £40M, and we hold £20M of our own CET1 instruments. Calculate our CET1 capital.",
+    {
+      icon: "🏦",
+      title: "Complete Capital Structure",
+      text: "Our bank has CET1 capital of £500M, AT1 instruments of £100M, and Tier 2 capital of £200M. We have £50M in intangible assets and £30M in deferred tax assets. What should we report in CA1?",
+    },
+    {
+      icon: "📊",
+      title: "CET1 Calculation",
+      text: "We have ordinary shares worth £300M, retained earnings of £150M, and other reserves of £50M. Our intangible assets total £40M, and we hold £20M of our own CET1 instruments. Calculate our CET1 capital.",
+    },
   ];
+
+  const handleSampleClick = (scenarioText: string) => {
+    setQuestion(scenarioText);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -109,7 +121,10 @@ export default function QueryPage() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Describe your bank's capital position, including CET1, AT1, T2 components, deductions, and any relevant details..."
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[200px] font-mono text-sm"
+              className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl 
+                       bg-white text-slate-900 placeholder-slate-500
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                       min-h-[200px] font-mono text-sm shadow-sm hover:shadow-md transition-shadow"
               disabled={mutation.isPending}
               required
             />
@@ -123,19 +138,25 @@ export default function QueryPage() {
             <h3 className="font-semibold text-slate-900 mb-3">
               💡 Try a sample scenario
             </h3>
-            <div className="space-y-3">
+            <div className="grid gap-4 md:grid-cols-2">
               {sampleScenarios.map((scenario, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setQuestion(scenario)}
-                  className="w-full text-left p-4 bg-white hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors text-sm"
+                  onClick={() => handleSampleClick(scenario.text)}
+                  className="group p-5 rounded-xl border-2 border-slate-700 bg-slate-900/50 hover:bg-slate-800/50
+                                         text-left transition-all duration-300 hover:border-blue-500
+                                         hover:shadow-lg hover:shadow-blue-500/20 backdrop-blur-sm
+                                         transform hover:scale-[1.02]"
                   disabled={mutation.isPending}
                 >
-                  <span className="font-medium text-blue-700">
-                    Sample {idx + 1}:
-                  </span>
-                  <p className="text-slate-700 mt-1">{scenario}</p>
+                  <h4 className="font-bold text-white mb-2 flex items-center gap-2">
+                    <span className="text-2xl">{scenario.icon}</span>
+                    {scenario.title}
+                  </h4>
+                  <p className="text-sm transition-colors line-clamp-2">
+                    {scenario.text}
+                  </p>
                 </button>
               ))}
             </div>
